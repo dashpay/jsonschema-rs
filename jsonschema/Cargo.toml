@@ -28,12 +28,14 @@ name = "jsonschema"
 
 [features]
 cli = ["clap"]
-default = ["resolve-http", "resolve-file", "cli"]
+default = ["resolve-http", "resolve-file", "cli", "simd"]
 draft201909 = []
 draft202012 = []
 
 resolve-http = ["reqwest"]
 resolve-file = []
+
+simd = []
 
 [dependencies]
 ahash = { version = "0.8", features = ["serde"] }
