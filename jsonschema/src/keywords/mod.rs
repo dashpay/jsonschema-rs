@@ -43,6 +43,16 @@ use crate::{error, validator::Validate};
 pub(crate) type CompilationResult<'a> = Result<BoxedValidator, error::ValidationError<'a>>;
 pub(crate) type BoxedValidator = Box<dyn Validate + Send + Sync>;
 
+#[cfg(feature = "simd")]
+fn num_chars(utf8_chars: &[u8]) -> usize {
+    bytecount::num_chars(utf8_chars)
+}
+
+#[cfg(not(feature = "simd"))]
+fn num_chars(utf8_chars: &[u8]) -> usize {
+    bytecount::naive_num_chars(utf8_chars)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::compilation::JSONSchema;
