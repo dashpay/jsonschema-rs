@@ -13,26 +13,31 @@ use crate::{
     paths::{JSONPointer, JsonPointerNode},
     primitive_type::PrimitiveType,
     validator::Validate,
-    Draft,
-    CompilationOptions,
+    CompilationOptions, Draft,
 };
 
-static DATE_RE: Lazy<fancy_regex::Regex> =
-    Lazy::new(|| fancy_regex::Regex::new(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\z").expect("Is a valid regex"));
-static IRI_REFERENCE_RE: Lazy<fancy_regex::Regex> =
-    Lazy::new(|| fancy_regex::Regex::new(r"^(\w+:(/?/?))?[^#\\\s]*(#[^\\\s]*)?\z").expect("Is a valid regex"));
+use super::num_chars;
+
+static DATE_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
+    fancy_regex::Regex::new(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\z").expect("Is a valid regex")
+});
+static IRI_REFERENCE_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
+    fancy_regex::Regex::new(r"^(\w+:(/?/?))?[^#\\\s]*(#[^\\\s]*)?\z").expect("Is a valid regex")
+});
 static JSON_POINTER_RE: Lazy<fancy_regex::Regex> =
     Lazy::new(|| fancy_regex::Regex::new(r"^(/(([^/~])|(~[01]))*)*\z").expect("Is a valid regex"));
 static RELATIVE_JSON_POINTER_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
-    fancy_regex::Regex::new(r"^(?:0|[1-9][0-9]*)(?:#|(?:/(?:[^~/]|~0|~1)*)*)\z").expect("Is a valid regex")
+    fancy_regex::Regex::new(r"^(?:0|[1-9][0-9]*)(?:#|(?:/(?:[^~/]|~0|~1)*)*)\z")
+        .expect("Is a valid regex")
 });
 static TIME_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
     fancy_regex::Regex::new(
         r"^([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(\.[0-9]{6})?(([Zz])|([+|\-]([01][0-9]|2[0-3]):[0-5][0-9]))\z",
     ).expect("Is a valid regex")
 });
-static URI_REFERENCE_RE: Lazy<fancy_regex::Regex> =
-    Lazy::new(|| fancy_regex::Regex::new(r"^(\w+:(/?/?))?[^#\\\s]*(#[^\\\s]*)?\z").expect("Is a valid regex"));
+static URI_REFERENCE_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
+    fancy_regex::Regex::new(r"^(\w+:(/?/?))?[^#\\\s]*(#[^\\\s]*)?\z").expect("Is a valid regex")
+});
 static URI_TEMPLATE_RE: Lazy<fancy_regex::Regex> = Lazy::new(|| {
     fancy_regex::Regex::new(
         r#"^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*})*\z"#
@@ -169,13 +174,11 @@ impl Validate for HostnameValidator {
             !(item.ends_with('-')
                 || item.starts_with('-')
                 || item.is_empty()
-                || bytecount::num_chars(item.as_bytes()) > 255
+                || num_chars(item.as_bytes()) > 255
                 || item
                     .chars()
                     .any(|c| !(c.is_alphanumeric() || c == '-' || c == '.'))
-                || item
-                    .split('.')
-                    .any(|part| bytecount::num_chars(part.as_bytes()) > 63))
+                || item.split('.').any(|part| num_chars(part.as_bytes()) > 63))
         } else {
             true
         }
@@ -189,13 +192,11 @@ impl Validate for IDNHostnameValidator {
             !(item.ends_with('-')
                 || item.starts_with('-')
                 || item.is_empty()
-                || bytecount::num_chars(item.as_bytes()) > 255
+                || num_chars(item.as_bytes()) > 255
                 || item
                     .chars()
                     .any(|c| !(c.is_alphanumeric() || c == '-' || c == '.'))
-                || item
-                    .split('.')
-                    .any(|part| bytecount::num_chars(part.as_bytes()) > 63))
+                || item.split('.').any(|part| num_chars(part.as_bytes()) > 63))
         } else {
             true
         }
@@ -288,7 +289,10 @@ struct RegexValidator {
 impl RegexValidator {
     pub(crate) fn compile<'a>(context: &CompilationContext) -> CompilationResult<'a> {
         let schema_path = context.as_pointer_with("format");
-        Ok(Box::new(Self { schema_path, config: Arc::clone(&context.config) }))
+        Ok(Box::new(Self {
+            schema_path,
+            config: Arc::clone(&context.config),
+        }))
     }
 }
 

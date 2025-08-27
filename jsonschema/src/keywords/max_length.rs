@@ -7,6 +7,8 @@ use crate::{
 };
 use serde_json::{Map, Value};
 
+use super::num_chars;
+
 pub(crate) struct MaxLengthValidator {
     limit: u64,
     schema_path: JSONPointer,
@@ -26,7 +28,7 @@ impl MaxLengthValidator {
 impl Validate for MaxLengthValidator {
     fn is_valid(&self, instance: &Value) -> bool {
         if let Value::String(item) = instance {
-            if (bytecount::num_chars(item.as_bytes()) as u64) > self.limit {
+            if (num_chars(item.as_bytes()) as u64) > self.limit {
                 return false;
             }
         }
@@ -39,7 +41,7 @@ impl Validate for MaxLengthValidator {
         instance_path: &JsonPointerNode,
     ) -> ErrorIterator<'instance> {
         if let Value::String(item) = instance {
-            if (bytecount::num_chars(item.as_bytes()) as u64) > self.limit {
+            if (num_chars(item.as_bytes()) as u64) > self.limit {
                 return error(ValidationError::max_length(
                     self.schema_path.clone(),
                     instance_path.into(),
